@@ -1,4 +1,10 @@
 .include "m328PBdef.inc"
+ 
+reset:
+    ldi r24,low(RAMEND)
+    out SPL,r24
+    ldi r24,high(RAMEND)
+    out SPH,r24  
     
 ldi r16,0x45
 ldi r17,0x23
