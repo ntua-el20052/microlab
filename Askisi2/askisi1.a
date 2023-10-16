@@ -44,8 +44,8 @@ loop1:
     clr r26
 loop2:
     out PORTB, r26
-    ldi r24, low(DEL_NU500)
-    ldi r25, high(DEL_NU500)
+    ldi r24, low(DEL_NU500-1)
+    ldi r25, high(DEL_NU500-1)
     rcall delay_mS
     
     inc r26
@@ -60,16 +60,27 @@ loop2:
     
     
 delay_mS:
-    ldi r23, 249
+    nop
+    nop
+    ldi	r22, 248	    ; (1 cycle)	
+loop_out:
+    dec r22		    ; 1 cycle
+    nop			    ; 1 cycle
+    brne loop_out	    ; 1 or 2 cycles
+     
+    ;total group delay 996 cycles
+delay_inner:		    
+    ldi	r23, 249	    ; (1 cycle)	
 loop_inn:
     dec r23		    ; 1 cycle
     nop			    ; 1 cycle
     brne loop_inn	    ; 1 or 2 cycles
      
     sbiw r24 ,1		    ; 2 cycles
-    brne delay_mS	    ; 1 or 2 cycles
+    brne delay_inner	    ; 1 or 2 cycles
  
-    ret			    ;4 cycl
+    ret			    ;4 cycles
+
     
     
     
