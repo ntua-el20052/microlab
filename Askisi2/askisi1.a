@@ -3,7 +3,8 @@
 .equ FOSC_MHZ=16	;MHz
 .equ DEL_mS=500	;mS
 .equ DEL_NU= FOSC_MHZ*DEL_mS  
-    
+.def interupts = r20
+ 
 .cseg
     .org 0x00		;Reset vector
     rjmp reset		;Jump to reset handler
@@ -21,8 +22,23 @@ reset:
 
 ;init PORTB as output
 ser r26
-out DDRB, r26
-
+out DDRB, r26	    ;PORTB=out
+out DDRC, r26	    ;PORTC=out
+clr r26
+out DDRD,r26	    ;PortD == in
+    
+ldi r26,(1<<ISC11)|(0<<ISC10)  ;Initialize external interrupt 1 (INT1)
+sts EICRA,r26		    ;Falling edge generates interrupt
+ldi r26,(1<<INT1)		    ;Configure INT1
+out EIMSK,r26		    ;Enable INT1 interrupt
+    
+sei		;Enable global interrupts
+    
+ldi interupts, 0x00	    ;init inteerupts leds on PORTC
+out PORTC, interupts	    ;Same
+    
+    
+    
 loop1:
     clr r26
 loop2:
@@ -57,16 +73,16 @@ loop_inn:
     
     
 ISR1:
-    in p7,PIND
-    sbrs p7, 6
+    in r17,PIND
+    sbrs r17, 6
     rjmp skip2
-    inc led
-    cpi led, 32
+    inc interupts
+    cpi interupts, 32
     breq skip
-    out PORTC,led
+    out PORTC,interupts
     reti
     skip:
-	ldi led,0x00
+	ldi interupts,0x00
 	reti
     skip2:
 	nop
