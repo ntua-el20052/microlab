@@ -78,8 +78,8 @@ ISR0:
     ldi r19,0x00
 loop3:
     ror r17
-    brcc syn
-    rjmp meion
+    brcs meion
+    rjmp syn
     
 syn:
     inc r19
@@ -99,3 +99,5 @@ exit:
     out PORTC,r20
     reti
     
+
+
