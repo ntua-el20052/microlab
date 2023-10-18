@@ -36,11 +36,11 @@ out EIMSK,r26		    ;Enable INT1 interrupt
 sei		;Enable global interrupts
 
 
-ldi ledall,0xff
+ldi ledall,0xff ; αρχικοποιω 
 ldi flag, 0x00
     
     
-main_loop:
+main_loop:		; κυριο προγραμμα, περιμενει να πιασει την εξαιρεση
     ldi counter, 0x00
     ldi led,0x00
     out PORTB,led
@@ -55,12 +55,13 @@ main_loop:
     
     
     
-ISR1:	   	
-	cpi flag, 1
+ISR1:	   			;διακοπη
+	cpi flag, 1		;εαν το flag ειναι 1, παταω διακοπη ενω ειναι ηδη ανοικτο το φως, αρα παω στο skip
 	breq skip
-	ldi flag, 0x01
+	ldi flag, 0x01		; θετω το flag 1 epeidh ξεκιναει η εκτελεση της πρωτης
         ldi counter, 0x64
-	sei
+	sei			;έπιτρεψε τις διακοπες μεσα στην διακοπη, αλλιως εαν κανεςι διακοπη ενω εκτελεις κωδικα
+				;διακοπης περιμενει να τερματισει η πρωτη και μετα ξεκιναει η δευτερη (nested interrupts)
 conti:	
 	ldi led, 0x01
 	out PORTB,led
@@ -77,7 +78,7 @@ skip:	;sei
 	ldi r25, high(DEL_NU2-1)
 	rcall delay_mS
 	;ldi counter,0x01
-	ldi flag, 0x00
+	ldi flag, 0x00		;τελειωνει το update οποτε κανε το φλαγκ 0
 	;out SREG, r20
 	reti
     
