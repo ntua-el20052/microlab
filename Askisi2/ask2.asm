@@ -78,7 +78,7 @@ ISR0:
     ldi r19,0x00
 loop3:
     ror r17
-    brcs syn
+    brcc syn
     rjmp meion
     
 syn:
