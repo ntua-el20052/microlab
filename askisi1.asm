@@ -1,9 +1,9 @@
 .include "m328PBdef.inc"
  
 .equ FOSC_MHZ=16	;MHz
-.equ DEL_mS=50	;mS
+.equ DEL_mS=100	;mS
 .equ DEL_NU= FOSC_MHZ*DEL_mS 
-.def dc_value=r24
+.def dc_value=r27
 
 
 TABLE:
@@ -22,41 +22,43 @@ reset:
     out DDRD,r26	    ;PortD == in
     
     ;set TMR1Ain fast PWM 8-bit mode with non-inverted output and prescale=8
-    ldi r16,(1<<OCIE1A)
-    sts TIMSK1,r16
     ldi r16,(1 << WGM10) | (1 << COM1A1) 
     sts TCCR1A, r16
-    ldi r16,(1 << WGM12) | (1 << CS11)
-    sts TCCR1A, r16
+    ldi r16,(1 << WGM12) | (1 << CS10)
+    sts TCCR1B, r16
     ;the table with the dc_values is set on Z and the first dc_value is 50%
     ;so its the 7th value on the TABLE
     ldi ZH,HIGH(TABLE*2)
     ldi ZL,LOW(TABLE*2)
     adiw ZL,12
-  
+    lpm
+    mov dc_value,r0
     
-   
-    
+
     
 main:
     lpm
     mov dc_value,r0
 start:
     sts OCR1AL,dc_value
-    ldi r24, low(DEL_NU-1)
-    ldi r25, high(DEL_NU-1)
-    rcall delay_mS
-    sbic PINB,1
+    in r26, PIND
+    sbrs r26,1
     rjmp syn
-    sbic PINB,2
+    sbrs r26,2
     rjmp meion
     rjmp start
 syn:
+    ldi r24, low(DEL_NU)
+    ldi r25, high(DEL_NU)    
+    rcall delay_mS
     cpi dc_value,0xFA
     breq start
     adiw ZL,2
     rjmp main
 meion:
+    ldi r24, low(DEL_NU)
+    ldi r25, high(DEL_NU)    
+    rcall delay_mS
     cpi dc_value,0x05
     breq start
     sbiw ZL,2
@@ -73,6 +75,3 @@ loop_inn:
     brne delay_mS	    ; 1 or 2 cycles
  
     ret			    ;4 cycl
-    
-
-
