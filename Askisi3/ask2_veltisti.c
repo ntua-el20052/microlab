@@ -47,7 +47,7 @@ int main(){
     ADMUX =0b01100001;
     ADCSRA =0b10000111;
     uint8_t duty=134;
-    //OCR1AL=duty;
+    OCR1AL=duty;
     DDRB |=0b00000010; //B input
     DDRD |=0b11111111; //B output
    while(1){
