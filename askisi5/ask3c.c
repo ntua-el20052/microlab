@@ -169,8 +169,8 @@ uint8_t ret_val;
 int main(void) {
  twi_init();
  PCA9555_0_write(REG_CONFIGURATION_0, 0x00); //Set EXT_PORT0 as output
- PCA9555_0_write(REG_CONFIGURATION_1, 0x61); //Set EXT_PORT1 as input
-
+ PCA9555_0_write(REG_CONFIGURATION_1, 0xF0); //Set for EXT_PORT1 P4-P7 as input and P0 as output
+ PCA9555_0_write(REG_OUTPUT_1, 0x01); //Set I01 as 1 to enable pull up
 
  while(1)
  {
