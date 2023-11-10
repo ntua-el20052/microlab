@@ -193,7 +193,7 @@ int main(void) {
        //_delay_ms(1000);
      }*/
      
-     
+   read=read>>4;  
      
  PCA9555_0_write(REG_OUTPUT_0, read);
 
