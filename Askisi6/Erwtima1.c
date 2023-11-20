@@ -3,7 +3,7 @@
 #include<avr/interrupt.h>
 #include<util/delay.h>
 #include<comunication.h>
-
+int table
 
 uint8_t scan_row(uint8_t row){
     row=~row;
@@ -25,10 +25,22 @@ uint16_t scan_keypad(){
     tmp|=scan_row(1);
     return tmp;
 }
+uint16_t scan_keypad_rising_edge(){
+    uint16_t tmp=0,read=0;
+    read= scan_keypad();
+    while(1){
+        tmp=scan_keypad();
+        if(read==scan_keypad)break;
+        sleep(50);
+        read= scan_keypad();
+    }
+    
+    reuturn 
+}
 uint16_t tmp=0,tmp2=0;
 
 
-
+    
 
 
 
