@@ -4,7 +4,10 @@
 #include<util/delay.h>
 #include<comunication.h>
 int table
-
+/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+POLU SIMANTIKO, i scan_row prepei na epistrefei me asous ta PATHMENA KOUMPIA 
+PX TO * einai to 00000001 h alliws 0x01, alliws de doulevei opote pi8ano bug
+*/
 uint8_t scan_row(uint8_t row){
     row=~row;
     PCA9555_0_write(REG_OUTPUT_1, row); //Set I0row as 1 to enable pull up
@@ -39,7 +42,26 @@ uint16_t scan_keypad_rising_edge(){
 }
 uint16_t tmp=0,tmp2=0;
 
-
+int keypad_to_ascii(){
+    uint16_t read = scan_keypad_rising_edge();
+    char result;
+    switch (read) {
+        case 0x01:
+            result = '*';
+            break;
+        case 0x02:
+            result = '0';
+            break;
+        case 0x04:
+            result = '#';
+            break;
+        case 0x08:
+            result = 'D';
+            break;     
+        default:
+            printf("Invalid value\n");
+            return 1;  // Indicate an error if the value is not 1 or 2
+}
     
 
 
