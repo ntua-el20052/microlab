@@ -78,7 +78,7 @@ uint16_t one_wire_reset(){
   int main(void){
       twi_init();
       PCA9555_0_write(REG_CONFIGURATION_0, 0x00); //Set EXT_PORT0 as output
-      uint16_t init1,init2,low,high;
+      uint16_t init1,init2,result;
       init1=one_wire_reset();
       while(init1==0x0001){
          one_wire_transmit_byte(0xCC);
@@ -93,8 +93,7 @@ uint16_t one_wire_reset(){
          one_wire_transmit_byte(0xCC);
          _delay_ms(100);
          one_wire_transmit_byte(0x34);
-         low=one_wire_receive_byte();
-         high=one_wire_receive_byte();
+         result=one_wire_receive_byte();
       }
       }
       
