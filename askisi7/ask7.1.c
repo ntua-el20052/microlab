@@ -3,6 +3,8 @@
 #include<avr/interrupt.h>
 #include<util/delay.h>
 #include <stddef.h>
+#include <string.h>
+
 #include "twi.h"
 void lcd_init() {
     // Wait for 250 milliseconds
@@ -207,7 +209,52 @@ uint16_t one_wire_reset(){
          //_delay_ms(1);
          one_wire_transmit_byte(0xBE);
          result=one_wire_receive_byte();
-         temp1=result & 0b1111100000000000;
+
+          
+        float deci;
+        char string1[5],string2[5];
+        char *sign="+";
+        if( value > 0x0800){
+                value =~ value;
+                value +=1;
+                sign="-";
+        }
+        deci=float(value & 0x0F)/16.0;
+        value = value>>4;
+        sprintf(string1, "%d", value);
+        sprintf(string2, "%d", int(deci*1000));
+        char data[10];
+        strcpy(data, sign);
+        strcat(data, string1);
+        strcat(data, ".");
+        strcat(data, string2);
+        lcd_data_string(data);
+      }
+         
+         
+      
+      else if(init2==0x8000){
+          lcd_data_string("No Device");
+          _delay_ms(1000);          
+      }
+      
+      }
+  }
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+temp1=result & 0b1111100000000000;
          if(temp1==0b0000000000000000){
              lcd_data("+");
              temp2= result & 0b0000011111111111;
@@ -226,17 +273,4 @@ uint16_t one_wire_reset(){
              lcd_data_string(temp4);
              _delay_ms(1000);
          }
-      }
-         
-         
-      
-      else if(init2==0x8000){
-          lcd_data_string("No Device");
-          _delay_ms(1000);          
-      }
-      
-      }
-  }
-      
-      
   
