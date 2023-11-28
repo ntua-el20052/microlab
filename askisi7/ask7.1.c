@@ -182,6 +182,16 @@ uint16_t one_wire_reset(){
           temp=temp>>1;
       }
   }
+
+
+int presicion (int a){
+    while (a%10 ==0 && a!=0)a/=10;
+    return a;
+}
+
+
+
+
   int main(void){
       twi_init();
       PCA9555_0_write(REG_CONFIGURATION_0, 0x00);
@@ -220,9 +230,10 @@ uint16_t one_wire_reset(){
                 sign="-";
         }
         deci=float(value & 0x0F)/16.0;
+        int value2 = presicion(int(deci*1000));
         value = value>>4;
         sprintf(string1, "%d", value);
-        sprintf(string2, "%d", int(deci*1000));
+        sprintf(string2, "%d", value2);
         char data[10];
         strcpy(data, sign);
         strcat(data, string1);
@@ -251,7 +262,7 @@ uint16_t one_wire_reset(){
 
 
 
-
+/*
 
 
 temp1=result & 0b1111100000000000;
@@ -273,4 +284,4 @@ temp1=result & 0b1111100000000000;
              lcd_data_string(temp4);
              _delay_ms(1000);
          }
-  
+ */ 
