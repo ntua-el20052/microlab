@@ -2,26 +2,25 @@
 #include<avr/io.h>
 #include<avr/interrupt.h>
 #include<util/delay.h>
-#include<comunication.h>
-int table
-/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-POLU SIMANTIKO, i scan_row prepei na epistrefei me asous ta PATHMENA KOUMPIA 
-PX TO * einai to 00000001 h alliws 0x01, alliws de doulevei opote pi8ano bug
-*/
+#include "askisi5.h"
+
+
 uint8_t scan_row(uint8_t row){
     row=~row;
     PCA9555_0_write(REG_OUTPUT_1, row); //Set I0row as 1 to enable pull up
     uint8_t read=PCA9555_0_read(REG_INPUT_1);
+    read=~read;
     read=read>>4;
+    PCA9555_0_write(REG_OUTPUT_1, 0xFF);
     return read;
 }
 
 
 uint16_t scan_keypad(){
-    uint16_t tmp=0;
-    tmp=scan_row(4);
+    uint16_t tmp=0x00;
+    tmp=scan_row(8);
     tmp=tmp<<4;
-    tmp|=scan_row(3);
+    tmp|=scan_row(4);
     tmp=tmp<<4;
     tmp|=scan_row(2);
     tmp=tmp<<4;
@@ -33,74 +32,96 @@ uint16_t scan_keypad_rising_edge(){
     read= scan_keypad();
     while(1){
         tmp=scan_keypad();
-        if(read==scan_keypad)break;
-        sleep(50);
+        if(read==tmp)break;
+       _delay_ms(50);
         read= scan_keypad();
     }
     
-    reuturn 
+    return read;
 }
 uint16_t tmp=0,tmp2=0;
 
-int keypad_to_ascii(){
+char keypad_to_ascii(){
     uint16_t read = scan_keypad_rising_edge();
     char result;
+    
     switch (read) {
-        case 0x01:
+        case 0x0100:
+            result= '4';
+            break;
+        case 0x0200:
+            result = '5';
+            break;
+        case 0x0400:
+            result = '6';
+            break;
+        case 0x0800:
+            result = 'B';
+            break;
+        case 0x1000:
+            result = '1';
+            break;
+        case 0x2000:
+            result = '2';
+            break;
+        case 0x4000:
+            result = '3';
+            break;
+        case 0x8000:
+            result = 'A';
+            break;
+        case 0x0010:
+            result = '7';
+            break;
+        case 0x0020:
+            result = '8';
+            break;
+        case 0x0040:
+            result = '9';
+            break;
+        case 0x0080:
+            result = 'C';
+            break;
+        case 0x0001:
             result = '*';
             break;
-        case 0x02:
+        case 0x0002:
             result = '0';
             break;
-        case 0x04:
+        case 0x0004:
             result = '#';
             break;
-        case 0x08:
+        case 0x0008:
             result = 'D';
-            break;     
+            break;
         default:
-            printf("Invalid value\n");
-            return 1;  // Indicate an error if the value is not 1 or 2
+            result=' ';  // Indicate an error if the value is not 1 or 2
+    }
+    return result;
 }
+int main(void){
+    twi_init();
+    PCA9555_0_write(REG_CONFIGURATION_0, 0x00); //Set EXT_PORT0 as output
+    PCA9555_0_write(REG_CONFIGURATION_1, 0xF0); //Set for EXT_PORT1 P4-P7 as input and P0 as output
+    DDRB=0XFF;
+    while(1){
+    char read=keypad_to_ascii();
+    if(read=="1"){
+       PORTB=0x01;
+       _delay_ms(500);
+    }
+    if(read=="5"){
+       PORTB=0x02;
+       _delay_ms(500);
+    }
+    if(read=="9"){
+       PORTB=0x04;
+       _delay_ms(500);
+    }
+    if(read=="D"){
+       PORTB=0x08;
+       _delay_ms(500);
+    }
     
-
-
-
-
-
-
-
-
-int main(void) {
- twi_init();
- PCA9555_0_write(REG_CONFIGURATION_0, 0x00); //Set EXT_PORT0 as output
- PCA9555_0_write(REG_CONFIGURATION_1, 0xF0); //Set for EXT_PORT1 P4-P7 as input and P0 as output
- PCA9555_0_write(REG_OUTPUT_1, 0x01); //Set I01 as 1 to enable pull up
-
- while(1)
- {
-    uint8_t read;
-    read=PCA9555_0_read(REG_INPUT_1);
-     /*if(read==0x81){
-       PCA9555_0_write(REG_OUTPUT_0, 0x08);  
-      // _delay_ms(1000);
-     }
-    if(read==0x41){
-       PCA9555_0_write(REG_OUTPUT_0, 0x04);  
-       //_delay_ms(1000);
-     }
-    if(read==0x21){
-       PCA9555_0_write(REG_OUTPUT_0, 0x02);  
-       //_delay_ms(1000);
-     }
-    if(read==0x11){
-       PCA9555_0_write(REG_OUTPUT_0, 0x01);  
-       //_delay_ms(1000);
-     }*/
-     
-   read=read>>4;  
-     
- PCA9555_0_write(REG_OUTPUT_0, read);
-
- }
+    }
 }
