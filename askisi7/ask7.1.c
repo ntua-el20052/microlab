@@ -195,20 +195,14 @@ int presicion (int a){
   int main(void){
       twi_init();
       PCA9555_0_write(REG_CONFIGURATION_0, 0x00);
-      uint16_t init1,init2,result;
-      uint16_t temp1,temp2,temp3;
-      int temp4=0;
-      int temp5=0;
+      uint16_t init1,init2,result,temp;
+       lcd_init();
       while(1){
       init1=one_wire_reset();
-      lcd_init();
-    _delay_ms(200);
-    lcd_clear_display();
-    _delay_ms(100);
+      lcd_clear_display();
       
       if(init1==0x0001){
          one_wire_transmit_byte(0xCC);
-         //_delay_ms(100);
          one_wire_transmit_byte(0x44);
          while(one_wire_receive_bit()==0);
       }
@@ -216,30 +210,36 @@ int presicion (int a){
       init2=one_wire_reset();
       if(init2==0x0001){
          one_wire_transmit_byte(0xCC);
-         //_delay_ms(1);
          one_wire_transmit_byte(0xBE);
          result=one_wire_receive_byte();
-
+         temp=result;
           
         float deci;
         char string1[5],string2[5];
-        char *sign='+';
         if( result > 0x0800){
                 result =~ result;
                 result +=1;
-                sign='-';
         }
-        deci=float(result & 0x0F)/16.0;
-        int value2 = presicion(int(deci*1000));
+        
+        deci=(float)(result & 0x0F)/16.0;
+        int value2 = presicion((int)(deci*1000));
         result = result>>4;
         sprintf(string1, "%d", result);
         sprintf(string2, "%d", value2);
         char data[10];
-        strcpy(data, sign);
-        strcat(data, string1);
+        strcpy(data, string1);
         strcat(data, ".");
         strcat(data, string2);
+        if( result > 0x0800){
+        lcd_data((char)45);
+        }
+        else{
+            lcd_data((char)43);
+        }
         lcd_data_string(data);
+        lcd_data((char)223);
+        lcd_data('C');
+        _delay_ms(1000);
       }
          
          
@@ -251,37 +251,3 @@ int presicion (int a){
       
       }
   }
-      
-
-
-
-
-
-
-
-
-
-
-/*
-
-
-temp1=result & 0b1111100000000000;
-         if(temp1==0b0000000000000000){
-             lcd_data("+");
-             temp2= result & 0b0000011111111111;
-             temp2=temp2>>4;
-             for(int i=0;i<7;i++){
-                 temp3=temp2 & 0x0001;
-                 if(temp3==0x0000){
-                     temp5=0;
-                 }
-                 else{
-                     temp5=1;
-                 }
-                 temp4=temp4+((temp5)*(pow(2, i)));
-                 temp2=temp2>>1;
-             }
-             lcd_data_string(temp4);
-             _delay_ms(1000);
-         }
- */ 
