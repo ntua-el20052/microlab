@@ -225,7 +225,7 @@ int presicion (int a){
         char string1[5],string2[5];
         char *sign='+';
         if( result > 0x0800){
-                result =~ value;
+                result =~ result;
                 result +=1;
                 sign='-';
         }
