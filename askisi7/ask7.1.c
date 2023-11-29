@@ -224,15 +224,15 @@ int presicion (int a){
         float deci;
         char string1[5],string2[5];
         char *sign="+";
-        if( value > 0x0800){
-                value =~ value;
-                value +=1;
+        if( result > 0x0800){
+                result =~ value;
+                result +=1;
                 sign="-";
         }
-        deci=float(value & 0x0F)/16.0;
+        deci=float(result & 0x0F)/16.0;
         int value2 = presicion(int(deci*1000));
-        value = value>>4;
-        sprintf(string1, "%d", value);
+        result = result>>4;
+        sprintf(string1, "%d", result);
         sprintf(string2, "%d", value2);
         char data[10];
         strcpy(data, sign);
