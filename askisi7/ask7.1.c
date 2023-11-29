@@ -223,11 +223,11 @@ int presicion (int a){
           
         float deci;
         char string1[5],string2[5];
-        char *sign="+";
+        char *sign='+';
         if( result > 0x0800){
                 result =~ value;
                 result +=1;
-                sign="-";
+                sign='-';
         }
         deci=float(result & 0x0F)/16.0;
         int value2 = presicion(int(deci*1000));
