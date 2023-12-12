@@ -17,6 +17,17 @@ while(!(UCSR0A&(1<<RXC0)));
 return UDR0;
 }
 
+void usart_transmit_string(char *a){
+    for (int i=0; i< strlen(a); i++){
+        usart_transmit(a[i]);
+    }
+
+    
+}
+
+
+
+
 
 int main(void){
     twi_init();
