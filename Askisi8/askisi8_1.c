@@ -17,12 +17,18 @@ while(!(UCSR0A&(1<<RXC0)));
 return UDR0;
 }
 
-void usart_transmit_string(char *a){
+void usart_transmit_string(const char *a){
     for (int i=0; i< strlen(a); i++){
         usart_transmit(a[i]);
-    }
-
-    
+    }    
+}
+char * usart_receive_string(){
+    char result[50]="";
+   while (a!= '\n'){
+       char a = usart_receive();
+       strcat(result, a);
+   }
+    return result;
 }
 
 
