@@ -5,6 +5,102 @@
 #include <stddef.h>
 #include "askisi5.h"
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+uint8_t scan_row(uint8_t row){
+    row=~row;
+    PCA9555_0_write(REG_OUTPUT_1, row); //Set I0row as 1 to enable pull up
+    uint8_t read=PCA9555_0_read(REG_INPUT_1);
+    read=~read;
+    read=read>>4;
+    PCA9555_0_write(REG_OUTPUT_1, 0xFF);
+    return read;
+}
+uint16_t scan_keypad(){
+    uint16_t tmp=0x00;
+    tmp=scan_row(8);
+    tmp=tmp<<4;
+    tmp|=scan_row(4);
+    tmp=tmp<<4;
+    tmp|=scan_row(2);
+    tmp=tmp<<4;
+    tmp|=scan_row(1);
+    return tmp;
+}
+uint16_t scan_keypad_rising_edge(){
+    uint16_t tmp=0,read=0;
+    read= scan_keypad();
+    while(1){
+        tmp=scan_keypad();
+        if(read==tmp)break;
+       _delay_ms(50);
+        read= scan_keypad();
+    }
+    
+    return read;
+}
+uint16_t tmp=0,tmp2=0;
+
+char keypad_to_ascii(){
+    uint16_t read = scan_keypad_rising_edge();
+    char result;
+    
+    switch (read) {
+        case 0x0100:
+            result = '4';
+            break;
+        case 0x0200:
+            result = '5';
+            break;
+        case 0x0400:
+            result = '6';
+            break;
+        case 0x0800:
+            result = 'B';
+            break;
+        case 0x1000:
+            result = '1';
+            break;
+        case 0x2000:
+            result = '2';
+            break;
+        case 0x4000:
+            result = '3';
+            break;
+        case 0x8000:
+            result = 'A';
+            break;
+        case 0x0010:
+            result = '7';
+            break;
+        case 0x0020:
+            result = '8';
+            break;
+        case 0x0040:
+            result = '9';
+            break;
+        case 0x0080:
+            result = 'C';
+            break;
+        case 0x0001:
+            result = '*';
+            break;
+        case 0x0002:
+            result = '0';
+            break;
+        case 0x0004:
+            result = '#';
+            break;
+        case 0x0008:
+            result = 'D';
+            break;
+        default:
+            result=0x00;  // Indicate an error if the value is not 1 or 2
+    }
+    return result;
+}
 
 void lcd_init() {
     // Wait for 250 milliseconds
@@ -55,7 +151,7 @@ void write_2_nibbles(uint8_t data) {
     PCA9555_0_write(REG_OUTPUT_0, hi);
     uint16_t temp1=PCA9555_0_read(REG_INPUT_0);
     PCA9555_0_write(REG_OUTPUT_0,(temp1 | 0x08));
-    _delay_us(50);
+    _delay_ms(0.0050);
     uint16_t temp2=PCA9555_0_read(REG_INPUT_0);
     PCA9555_0_write(REG_OUTPUT_0, (temp2 & 0b11110111));
     
@@ -65,7 +161,7 @@ void write_2_nibbles(uint8_t data) {
     PCA9555_0_write(REG_OUTPUT_0, lo);
     uint16_t temp3=PCA9555_0_read(REG_INPUT_0);
     PCA9555_0_write(REG_OUTPUT_0,(temp3 | 0x08));
-    _delay_us(50);
+    _delay_ms(0.005);
     uint16_t temp4=PCA9555_0_read(REG_INPUT_0);
     PCA9555_0_write(REG_OUTPUT_0, (temp4 & 0b11110111));
     
@@ -129,13 +225,20 @@ void usart_transmit_string(const char *a){
         usart_transmit(a[i]);
     }    
 }
-void usart_receive_string(char * result){
-    char a=usart_receive();
-    while (a!= '\n'){
-       a = usart_receive();
-       strcat(result,a);
-   }
+void usart_receive_string(){
+    char a[50];
+    for(int i=0; i<50; i++){
+        a[i]=usart_receive();
+        if (a[i]=='\n')break;
+    }
+    for(int i=0; i<50; i++){
+        if(a[i]!='\n')lcd_data(a[i]);
+        else break;
+    }
+    _delay_ms(2000);
 }
+
+
 uint16_t one_wire_reset(){
   DDRD |=0x10;
   PORTD &=0b11101111;
@@ -224,7 +327,7 @@ void adc_init(){
     return;
 }
 
-void mode2(){                                         //auto to while me to apokatw sxolia- isws xreiastei, trexei mexri na pati8ei allagi mode wste na glitwsw calls sth sinartisi mode2 
+char mode2(){                                         //auto to while me to apokatw sxolia- isws xreiastei, trexei mexri na pati8ei allagi mode wste na glitwsw calls sth sinartisi mode2 
    ADCSRA |=(1 << ADSC);
    uint8_t temp; 
    while(1){
@@ -233,74 +336,80 @@ void mode2(){                                         //auto to while me to apok
       if(temp==0)break;
    }
    uint8_t adcvalueh,adcvaluel;
+   char result;
    adcvaluel=ADCL;
    adcvalueh=ADCH;
    switch (adcvalueh) {
     case 1 ... 32:
-        lcd_data_string("20");
+        result="20";
         break;
 
     case 33 ... 64:
-        lcd_data_string("16");
+        result="16";
         break;
 
     case 65 ... 96:
-        lcd_data_string("12");
+        result="12";
         break;
 
     case 97 ... 128:
-        lcd_data_string("10");
+        result="10";
         break;
 
     case 129 ... 160:
-        lcd_data_string("8");
+        result="8";
         break;
 
     case 161 ... 192:
-        lcd_data_string("4");
+        result="4";
         break;
 
     case 193 ... 224:
-        lcd_data_string("2");
+        result="2";
         break;
 
     case 225 ... 255:
-        lcd_data_string("0");
+        result="0";
         break;
 
     default:
-        lcd_data_string("20");
+        result="20";
         break;
 }
-
-   
+ 
+ return result;  
 }
 
 
 int main(void){
     twi_init();
     PCA9555_0_write(REG_CONFIGURATION_0, 0x00);
+    PCA9555_0_write(REG_CONFIGURATION_1, 0xF0);
     lcd_init();
     _delay_ms(200);
     usart_init(103);
     DDRB=0xFF;
-   
-    
-    usart_transmit_string("ESP:connect\n");
+    char data[10];
+    char answer[50];
     lcd_clear_display();
-    char a = usart_receive();
-    a = usart_receive();
+    usart_transmit_string("ESP:connect\n");
+    char a=usart_receive();
+    a=usart_receive();
     if(a=='S'){lcd_data_string("1.Success");}
     else{lcd_data_string("1.Fail");}
+    
     _delay_ms(2000);
+    lcd_clear_display();
     while (a!= '\n'){a = usart_receive();}
     usart_transmit_string("ESP:url:\"http://192.168.1.250:5000/data\"\n");
-    lcd_clear_display();
     a = usart_receive();
     a = usart_receive();
     if(a=='S'){lcd_data_string("2.Success");}
     else{lcd_data_string("2.Fail");}
     _delay_ms(2000);
+    while (a!= '\n'){a = usart_receive();}
+    
+   
     
     uint16_t init1,init2,result,temp;
      init1=one_wire_reset();
@@ -332,24 +441,86 @@ int main(void){
         result=result+12;
         sprintf(string1, "%d", result);
         sprintf(string2, "%d", value2);
-        char data[10];
+        
         strcpy(data, string1);
         strcat(data, ".");
         strcat(data, string2);
-        lcd_data_string(data);
+       
         _delay_ms(2000);
       }
   
       ADMUX =0b01100000; 
       ADCSRA =0b10000111;
-     
-     while(1){
+      char piesi;
+      
       lcd_clear_display();
       
-       mode2();
-     
+      piesi=mode2();
+      char *piesi_str[50];
+      char *status[100];
+      sprintf(status,"OK");
       
-      _delay_ms(2000);
-       }
+     sprintf(piesi_str, piesi);
+     
+     char read = keypad_to_ascii();
+     while( read == 0){read=keypad_to_ascii();}
+     if(read=='0'){
+         while(1){
+        sprintf(status,"NURSE CALL");
+        read=keypad_to_ascii();
+        while( read == 0){read=keypad_to_ascii();}
+        if(read=='#'){
+            sprintf(status,"OK");
+            break;
+        }
+                 
+     }
+     }
+     if(piesi>12||piesi<4){
+         sprintf(status,"CHECK PRESSURE");
+     }
+     double temprature = atof(data);
+     if(temprature>37||temprature<34){
+         sprintf(status,"CHECK TEMPRATURE");
+     }
+    
+    char *payload[600];
+   
+    //sprintf(payload,"ESP:payload:[{\"name\": \"temperature\",\"value\": \"%s\"},{\"name\": \"pressure\",\"value\": \"%s\"},{\"name\": \"team\",\"value\": \"50\"},{\"name\": \"status\",\"value\": \"%s\"}]\n",data,piesi_str,status);
+
+   sprintf(payload, "ESP:payload:[{\"name\": \"temperature\",\"value\": \"");
+   strcat(payload, data);
+   strcat(payload,"\"},");
+   strcat(payload, "{\"name\": \"pressure\",\"value\": \"");
+   strcat(payload, piesi_str);
+   strcat(payload, "\"},");
+   strcat(payload, "{\"name\": \"team\",\"value\": \"50\"},");
+   strcat(payload, "{\"name\": \"status\",\"value\": \"");
+   strcat(payload, status);
+   strcat(payload, "\"}]\n");
+    
+   
+    //lcd_clear_display(); 
+    
+    
+    //usart_transmit_string("ESP:payload:[{\"name\": \"temperature\",\"value\": \"32.0\"},{\"name\": \"pressure\",\"value\": \"60.0\"},{\"name\": \"team\",\"value\": \"5\"},{\"name\": \"status\",\"value\": \"OK\"}]\n");
+    usart_transmit_string(payload);
+   
+    a = usart_receive();
+    a = usart_receive();
+    if(a=='S'){lcd_data_string("3.Success");}
+    else{lcd_data_string("3.Fail");}
+    _delay_ms(2000);
+    lcd_clear_display(); 
+    while (a!= '\n'){a = usart_receive();}
+    usart_transmit_string("ESP:transmit\n");
+       
+
+    usart_receive_string();
+    _delay_ms(2000);
+
     return 0;
 }
+
+    
+
