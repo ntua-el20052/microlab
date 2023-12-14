@@ -327,7 +327,7 @@ void adc_init(){
     return;
 }
 
-char mode2(){                                         //auto to while me to apokatw sxolia- isws xreiastei, trexei mexri na pati8ei allagi mode wste na glitwsw calls sth sinartisi mode2 
+double mode2(){                                         //auto to while me to apokatw sxolia- isws xreiastei, trexei mexri na pati8ei allagi mode wste na glitwsw calls sth sinartisi mode2 
    ADCSRA |=(1 << ADSC);
    uint8_t temp; 
    while(1){
@@ -336,44 +336,44 @@ char mode2(){                                         //auto to while me to apok
       if(temp==0)break;
    }
    uint8_t adcvalueh,adcvaluel;
-   char result;
+   double result;
    adcvaluel=ADCL;
    adcvalueh=ADCH;
    switch (adcvalueh) {
     case 1 ... 32:
-        result="20";
+        result=20;
         break;
 
     case 33 ... 64:
-        result="16";
+        result=16;
         break;
 
     case 65 ... 96:
-        result="12";
+        result=12;
         break;
 
     case 97 ... 128:
-        result="10";
+        result=10;
         break;
 
     case 129 ... 160:
-        result="8";
+        result=8;
         break;
 
     case 161 ... 192:
-        result="4";
+        result=4;
         break;
 
     case 193 ... 224:
-        result="2";
+        result=2;
         break;
 
     case 225 ... 255:
-        result="0";
+        result=0;
         break;
 
     default:
-        result="20";
+        result=20;
         break;
 }
  
@@ -451,7 +451,7 @@ int main(void){
   
       ADMUX =0b01100000; 
       ADCSRA =0b10000111;
-      char piesi;
+      double piesi;
       
       lcd_clear_display();
       
@@ -460,7 +460,7 @@ int main(void){
       char *status[100];
       sprintf(status,"OK");
       
-     sprintf(piesi_str, piesi);
+     sprintf(piesi_str,"%d", piesi);
      
      char read = keypad_to_ascii();
      while( read == 0){read=keypad_to_ascii();}
@@ -484,7 +484,7 @@ int main(void){
          sprintf(status,"CHECK TEMPRATURE");
      }
     
-    char *payload[600];
+    char payload[600];
    
     //sprintf(payload,"ESP:payload:[{\"name\": \"temperature\",\"value\": \"%s\"},{\"name\": \"pressure\",\"value\": \"%s\"},{\"name\": \"team\",\"value\": \"50\"},{\"name\": \"status\",\"value\": \"%s\"}]\n",data,piesi_str,status);
 
