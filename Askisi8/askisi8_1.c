@@ -456,8 +456,8 @@ int main(void){
       lcd_clear_display();
       
       piesi=mode2();
-      char *piesi_str[50];
-      char *status[100];
+      char piesi_str[50];
+      char status[100];
       sprintf(status,"OK");
       
      sprintf(piesi_str,"%d", piesi);
