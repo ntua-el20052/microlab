@@ -456,8 +456,8 @@ int main(void){
       lcd_clear_display();
       
       piesi=mode2();
-      char piesi_str[50];
-      char status[100];
+      char *piesi_str[50];
+      char *status[100];
       sprintf(status,"OK");
       
      sprintf(piesi_str,"%d", piesi);
@@ -498,9 +498,18 @@ int main(void){
    strcat(payload, "{\"name\": \"status\",\"value\": \"");
    strcat(payload, status);
    strcat(payload, "\"}]\n");
+   
+   lcd_data_string("TMP:");
+   lcd_data_string(data);
+   lcd_data_string(" PRES:");
+   lcd_data_string(piesi_str);
+   lcd_data((char)10);
+   lcd_data_string(status);
+   _delay_ms(2000);
+   
     
    
-    //lcd_clear_display(); 
+    lcd_clear_display(); 
     
     
     //usart_transmit_string("ESP:payload:[{\"name\": \"temperature\",\"value\": \"32.0\"},{\"name\": \"pressure\",\"value\": \"60.0\"},{\"name\": \"team\",\"value\": \"5\"},{\"name\": \"status\",\"value\": \"OK\"}]\n");
@@ -523,4 +532,3 @@ int main(void){
 }
 
     
-
