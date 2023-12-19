@@ -233,7 +233,7 @@ void usart_receive_string(){
     }
     for(int i=0; i<50; i++){
         if(a[i]!='\n')lcd_data(a[i]);
-        else break;
+       else break;
     }
     _delay_ms(2000);
 }
@@ -327,7 +327,7 @@ void adc_init(){
     return;
 }
 
-double mode2(){                                         //auto to while me to apokatw sxolia- isws xreiastei, trexei mexri na pati8ei allagi mode wste na glitwsw calls sth sinartisi mode2 
+int mode2(){                                         //auto to while me to apokatw sxolia- isws xreiastei, trexei mexri na pati8ei allagi mode wste na glitwsw calls sth sinartisi mode2 
    ADCSRA |=(1 << ADSC);
    uint8_t temp; 
    while(1){
@@ -336,7 +336,7 @@ double mode2(){                                         //auto to while me to ap
       if(temp==0)break;
    }
    uint8_t adcvalueh,adcvaluel;
-   double result;
+   int result;
    adcvaluel=ADCL;
    adcvalueh=ADCH;
    switch (adcvalueh) {
@@ -389,7 +389,7 @@ int main(void){
     _delay_ms(200);
     usart_init(103);
     DDRB=0xFF;
-    char data[10];
+    char data[20];
     char answer[50];
     lcd_clear_display();
     usart_transmit_string("ESP:connect\n");
@@ -397,7 +397,7 @@ int main(void){
     a=usart_receive();
     if(a=='S'){lcd_data_string("1.Success");}
     else{lcd_data_string("1.Fail");}
-    
+  
     _delay_ms(2000);
     lcd_clear_display();
     while (a!= '\n'){a = usart_receive();}
@@ -408,8 +408,8 @@ int main(void){
     else{lcd_data_string("2.Fail");}
     _delay_ms(2000);
     while (a!= '\n'){a = usart_receive();}
-    
-   
+    while(1){
+  
     
     uint16_t init1,init2,result,temp;
      init1=one_wire_reset();
@@ -438,7 +438,7 @@ int main(void){
         deci=(float)(result & 0x0F)/16.0;
         int value2 = presicion((int)(deci*1000));
         result = result>>4;
-        result=result+12;
+        result=result+14;
         sprintf(string1, "%d", result);
         sprintf(string2, "%d", value2);
         
@@ -451,42 +451,39 @@ int main(void){
   
       ADMUX =0b01100000; 
       ADCSRA =0b10000111;
-      double piesi;
+      int piesi;
       
       lcd_clear_display();
       
-      piesi=mode2();
-      char *piesi_str[50];
-      char *status[100];
+      char piesi_str[50];
+      piesi=mode2(); 
+      sprintf(piesi_str,"%d", piesi);  
+      
+      char status[100];
       sprintf(status,"OK");
       
-     sprintf(piesi_str,"%d", piesi);
+     //sprintf(piesi_str,"%d", piesi);////;;;;;;;;;;
      
-     char read = keypad_to_ascii();
-     while( read == 0){read=keypad_to_ascii();}
-     if(read=='0'){
-         while(1){
-        sprintf(status,"NURSE CALL");
-        read=keypad_to_ascii();
-        while( read == 0){read=keypad_to_ascii();}
-        if(read=='#'){
+     char read1 = keypad_to_ascii();
+     if(read1=='0'){
+        sprintf(status,"NURSECALL");
+     }
+     char read2=keypad_to_ascii();
+     if(read2=='#'){
             sprintf(status,"OK");
-            break;
-        }
                  
      }
-     }
+     
      if(piesi>12||piesi<4){
-         sprintf(status,"CHECK PRESSURE");
+         sprintf(status,"CHECK_PRESSURE");
      }
-     double temprature = atof(data);
-     if(temprature>37||temprature<34){
-         sprintf(status,"CHECK TEMPRATURE");
+     if(result>37 || result<34){
+        sprintf(status,"CHECK_TEMP");
      }
     
     char payload[600];
    
-    //sprintf(payload,"ESP:payload:[{\"name\": \"temperature\",\"value\": \"%s\"},{\"name\": \"pressure\",\"value\": \"%s\"},{\"name\": \"team\",\"value\": \"50\"},{\"name\": \"status\",\"value\": \"%s\"}]\n",data,piesi_str,status);
+    
 
    sprintf(payload, "ESP:payload:[{\"name\": \"temperature\",\"value\": \"");
    strcat(payload, data);
@@ -499,11 +496,11 @@ int main(void){
    strcat(payload, status);
    strcat(payload, "\"}]\n");
    
-   lcd_data_string("TMP:");
+   lcd_data_string("T:");
    lcd_data_string(data);
-   lcd_data_string(" PRES:");
+   lcd_data_string(" P:");
    lcd_data_string(piesi_str);
-   lcd_data((char)10);
+   lcd_command(0xC0);
    lcd_data_string(status);
    _delay_ms(2000);
    
@@ -512,7 +509,8 @@ int main(void){
     lcd_clear_display(); 
     
     
-    //usart_transmit_string("ESP:payload:[{\"name\": \"temperature\",\"value\": \"32.0\"},{\"name\": \"pressure\",\"value\": \"60.0\"},{\"name\": \"team\",\"value\": \"5\"},{\"name\": \"status\",\"value\": \"OK\"}]\n");
+    
+    
     usart_transmit_string(payload);
    
     a = usart_receive();
@@ -527,8 +525,10 @@ int main(void){
 
     usart_receive_string();
     _delay_ms(2000);
+    
 
-    return 0;
 }
+}
+
 
     
