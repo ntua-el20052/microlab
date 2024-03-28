@@ -15,5 +15,5 @@ This project aims to familiarize participants, including myself and Pavlos, with
 
 ## Co-Author
 
-- [Pavlos Skourtis](https://github.com/PavlosSkourtis)
+- [Konstantinos Papadopoulos](https://github.com/ConstantinePapadopoulos)
 
