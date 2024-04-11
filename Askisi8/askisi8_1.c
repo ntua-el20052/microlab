@@ -438,7 +438,7 @@ int main(void){
         deci=(float)(result & 0x0F)/16.0;
         int value2 = presicion((int)(deci*1000));
         result = result>>4;
-        result=result+14;
+        result=result+;
         sprintf(string1, "%d", result);
         sprintf(string2, "%d", value2);
         
@@ -463,22 +463,25 @@ int main(void){
       sprintf(status,"OK");
       
      //sprintf(piesi_str,"%d", piesi);////;;;;;;;;;;
-     
+      for (int i = 0; i < 100; i++){
      char read1 = keypad_to_ascii();
      if(read1=='0'){
         sprintf(status,"NURSECALL");
      }
+      }
+      for (int i = 0; i < 100; i++){
      char read2=keypad_to_ascii();
      if(read2=='#'){
             sprintf(status,"OK");
                  
      }
+      }
      
      if(piesi>12||piesi<4){
-         sprintf(status,"CHECK_PRESSURE");
+         sprintf(status,"CHECKPRESSURE");
      }
      if(result>37 || result<34){
-        sprintf(status,"CHECK_TEMP");
+        sprintf(status,"CHECKTEMP");
      }
     
     char payload[600];
