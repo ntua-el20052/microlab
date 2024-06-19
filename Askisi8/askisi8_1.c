@@ -438,7 +438,7 @@ int main(void){
         deci=(float)(result & 0x0F)/16.0;
         int value2 = presicion((int)(deci*1000));
         result = result>>4;
-        result=result+;
+        result=result+10;
         sprintf(string1, "%d", result);
         sprintf(string2, "%d", value2);
         
