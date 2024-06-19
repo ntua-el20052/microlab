@@ -1,0 +1,177 @@
+#define F_CPU 16000000UL
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <util/delay.h>
+
+void write_2_nibbles(uint8_t c);
+void lcd_clear_display();
+void lcd_command(uint8_t com);
+void lcd_data(unsigned char data);
+void lcd_init();
+void lcd_string(char *str);
+
+
+uint8_t gas=0;
+
+ISR(ADC_vect){		
+	gas=ADC;
+}
+
+int main()
+{
+   
+    DDRB |= 0xFF;
+    DDRD |= 0xFF;
+    
+           
+    ADMUX |=  0b01100001; //Right adjusted, ADC2 POT3
+    ADCSRA |= 0b10000111;   //128 Prescaler and ASIE=1
+           
+    lcd_init();
+   // sei();
+//    ADCSRA|= (1<<ADSC);  
+//    ADCSRA |= (1<<ADSC);
+//                    while(1){
+//            uint8_t temp=ADCSRA;
+//            temp=temp & 64; //0b01000000; apomonosi ADSC
+//            if(temp==0)break;
+//       }
+//        uint8_t adcvalueh,adcvaluel;
+//        adcvaluel=ADCL;
+//        adcvalueh=ADCH;//Start ADC
+
+    while (1)
+    {
+        ADCSRA |= (1<<ADSC);
+                    while(1){
+            uint8_t temp=ADCSRA;
+            temp=temp & 64; //0b01000000; apomonosi ADSC
+            if(temp==0)break;
+       }
+        uint8_t adcvalueh,adcvaluel;
+        adcvaluel=ADCL;
+        adcvalueh=ADCH;
+        gas=adcvalueh;
+       // _delay_ms(500);
+        if(gas>90){
+//            //sei();
+            lcd_clear_display();
+            char message[]="GAS DETECTED";
+            lcd_string(message);
+//            
+ //           while(gas>143){
+//                //sei();
+                int i;
+                //PORTB=0xFF;
+//                if (gas > 40)PORTB=0x01;
+//                else if(gas>80)PORTB=0x02;
+//                else if(gas >150)PORTB=0x03;
+//                else if(gas >200)PORTB=0x04;
+//                else PORTB=0x05;
+//                _delay_ms(500);
+                for(i=0; i<5; i++){
+                    _delay_ms(50);
+                    PORTB=gas;
+                    _delay_ms(50);
+                    PORTB=0;
+                }
+//                    if(gas<=143) break;
+                   
+       }
+//        uint8_t adcvalueh,adcvaluel;
+//        adcvaluel=ADCL;
+ //       gas=ADCH;
+//                }
+//                
+//                if(gas<=205) break;
+//
+//                PORTB=0;
+//                for(i=0; i<5; i++){
+//                    _delay_ms(100);
+//                    if(gas<=205) break;
+//                    ADCSRA|= (1<<ADSC);
+//                }
+//            }
+//
+else{
+//        
+             lcd_clear_display();
+            char message[]="CLEAR";
+            lcd_string(message);
+            PORTB=gas;
+            _delay_ms(50);
+     //       while(gas<=205){
+//                _delay_ms(100);
+//                ADCSRA|= (1<<ADSC);
+//            }
+        }
+   
+    }
+}
+   
+void write_2_nibbles(uint8_t c){
+    uint8_t temp= c;
+    PORTD = (PIND & 0x0f) + (temp & 0xf0); //LCD Data High Bytes
+    PORTD|=0x08;
+    asm("nop");
+    asm("nop");
+    PORTD&=~(0x08);
+   
+    c=(c<<4)|(c>>4);
+    PORTD = (PIND & 0x0f) + (c & 0xf0); //LCD Data Low Bytes
+   
+   PORTD|=0x08;
+    asm("nop");
+    asm("nop");
+    PORTD&=~(0x08);
+   
+}
+
+void lcd_clear_display(){
+    lcd_command(0x01);
+    _delay_ms(5);
+}
+
+void lcd_command(uint8_t com){
+    PORTD&=~4; //LCD_RS=0 => Instruction
+    write_2_nibbles(com);
+    _delay_us(250);
+}
+
+void lcd_data(uint8_t  data){
+    PORTD|=4; //LCD_RS=1 => Data
+    write_2_nibbles(data);
+    _delay_us(250);
+}
+
+void lcd_init(){
+    _delay_ms(200);
+    int i=0;
+    while(i<3){      //command to switch to 8 bit mode
+        PORTD=0x30;
+        PORTD|=0x08;
+        asm("nop");
+        asm("nop");
+        PORTD&=~0x08;
+        _delay_us(250);
+        ++i;
+    }
+   
+    PORTD=0x20;     //command to switch to 4 bit mode
+    PORTD|=0x08;
+    _delay_us(2);
+    PORTD&=~0x08;
+    _delay_us(250);
+   
+    lcd_command(0x28); //5*8 dots, 2 lines
+    lcd_command(0x0c); //display on, cursor off
+   
+    lcd_clear_display();
+   
+}
+
+void lcd_string(char *str){
+    int i;
+    for(i=0; str[i]!=0; i++) lcd_data(str[i]);
+}
+
