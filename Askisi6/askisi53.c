@@ -126,15 +126,15 @@ int main(void) {
     char read = keypad_to_ascii();
     while( read == 0){read=keypad_to_ascii();}
     if (read=='5'){
-        _delay_ms(500);
+        while( read == '5'){read=keypad_to_ascii();}
         read = keypad_to_ascii();
         while( read == 0){read=keypad_to_ascii();}
         
-        if(read=='5'){PORTB=0xFF;_delay_ms(4000); continue;}
+        if(read=='0'){PORTB=0xFF;_delay_ms(4000); continue;}
         else {open(); continue;}
     }
     else{
-        _delay_ms(500);
+        _delay_ms(150);
         read = keypad_to_ascii();
         while( read == 0){read=keypad_to_ascii();};
         open();
